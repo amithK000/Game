@@ -58,4 +58,10 @@ public class Damageable : MonoBehaviour
         CurrentHealth = maxHealth;
         OnHealthChanged?.Invoke(CurrentHealth);
     }
+
+    public void ResetHealth()
+    {
+        CurrentHealth = maxHealth;
+        OnHealthChanged?.Invoke(CurrentHealth);
+    }
 }

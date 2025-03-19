@@ -81,15 +81,21 @@ public class TruckController : MonoBehaviour
         _isDead = true;
         _currentSpeed = 0f;
         // Additional death logic will be implemented here
-
-        private void OnCollisionEnter(Collision collision)
+        
+        // Play death sound
+        AudioManager.Instance.PlaySound("truck_death", transform.position);
+        
+        // Trigger game over
+        GameManager.Instance.GameOver();
+    }
+    
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Play collision sound with cooldown
+        if (Time.time - _lastCollisionTime > _collisionCooldown)
         {
-            // Play collision sound with cooldown
-            if (Time.time - _lastCollisionTime > _collisionCooldown)
-            {
-                AudioManager.Instance.PlaySound("collision", collision.contacts[0].point);
-                _lastCollisionTime = Time.time;
-            }
+            AudioManager.Instance.PlaySound("collision", collision.contacts[0].point);
+            _lastCollisionTime = Time.time;
         }
     }
 }

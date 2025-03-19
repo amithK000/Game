@@ -55,6 +55,26 @@ public class GameManager : MonoBehaviour
     public int CurrentScore => _currentScore;
     public event System.Action<int> OnScoreChanged;
 
+    public void RestartGame()
+    {
+        _currentScore = 0;
+        OnScoreChanged?.Invoke(_currentScore);
+
+        // Find and reset player health
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            var damageable = player.GetComponent<Damageable>();
+            if (damageable != null)
+            {
+                damageable.ResetHealth();
+            }
+        }
+
+        // Reset any other game state here
+        ResumeGame();
+    }
+
     public void AddScore(int points)
     {
         _currentScore += points;
@@ -65,5 +85,26 @@ public class GameManager : MonoBehaviour
     public void ResetScore()
     {
         _currentScore = 0;
+    }
+    
+    // Game over handling
+    public void GameOver()
+    {
+        // Find and show the game over UI
+        var gameOverUI = FindObjectOfType<GameOverUI>();
+        if (gameOverUI != null)
+        {
+            // The ShowGameOver method will handle pausing and displaying UI
+            gameOverUI.SendMessage("ShowGameOver");
+        }
+        else
+        {
+            // Fallback if no UI is found
+            PauseGame();
+            Debug.LogWarning("GameOverUI not found. Game paused.");
+        }
+        
+        // Play game over sound
+        AudioManager.Instance.PlaySound("game_over");
     }
 }

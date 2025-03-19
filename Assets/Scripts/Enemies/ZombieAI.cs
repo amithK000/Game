@@ -76,8 +76,26 @@ public class ZombieAI : MonoBehaviour
     {
         _isDead = true;
         _agent.isStopped = true;
-        // Disable collider and add death animation/effects here
-        Destroy(gameObject, 3f); // Destroy after delay for death animation
+        
+        // Notify LevelManager about zombie kill
+        LevelManager.Instance.ZombieKilled();
+        
+        // Play death sound
+        AudioManager.Instance.PlaySound("zombie_death", transform.position);
+        
+        // Return to object pool after delay for death animation
+        StartCoroutine(ReturnToPoolAfterDelay(3f));
+    }
+    
+    private System.Collections.IEnumerator ReturnToPoolAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        // Reset zombie state before returning to pool
+        _isDead = false;
+        
+        // Return to object pool
+        ObjectPool.Instance.ReturnToPool(gameObject, ZombieSpawner.Instance.ZombiePrefab);
     }
 
     private void OnDrawGizmosSelected()

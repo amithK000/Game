@@ -3,6 +3,19 @@ using System.Collections.Generic;
 
 public class ZombieSpawner : MonoBehaviour
 {
+    private static ZombieSpawner _instance;
+    public static ZombieSpawner Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<ZombieSpawner>();
+            }
+            return _instance;
+        }
+    }
+
     [Header("Spawn Settings")]
     [SerializeField] private GameObject zombiePrefab;
     [SerializeField] private float minSpawnDistance = 20f;
@@ -10,6 +23,7 @@ public class ZombieSpawner : MonoBehaviour
     [SerializeField] private int zombiesPerWave = 5;
     [SerializeField] private float timeBetweenWaves = 30f;
     [SerializeField] private float difficultyScalingFactor = 1.2f;
+    [SerializeField] private int initialPoolSize = 30; // Initial size of zombie pool
 
     [Header("Spawn Points")]
     [SerializeField] private bool useRandomSpawnPoints = true;
@@ -20,10 +34,26 @@ public class ZombieSpawner : MonoBehaviour
     private int _currentWave = 0;
     private List<GameObject> _activeZombies = new List<GameObject>();
 
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        else if (_instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
     private void Start()
     {
         _playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         _nextWaveTime = Time.time + timeBetweenWaves;
+        
+        // Initialize the object pool for zombies
+        ObjectPool.Instance.InitializePool(zombiePrefab, initialPoolSize);
     }
 
     private void Update()
@@ -66,7 +96,8 @@ public class ZombieSpawner : MonoBehaviour
             spawnPosition = spawnPoint.position;
         }
 
-        GameObject zombie = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
+        // Get zombie from object pool instead of instantiating
+        GameObject zombie = ObjectPool.Instance.GetFromPool(zombiePrefab, spawnPosition, Quaternion.identity);
         _activeZombies.Add(zombie);
     }
 
