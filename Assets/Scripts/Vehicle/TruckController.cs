@@ -3,6 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class TruckController : MonoBehaviour
 {
+    private bool _isEngineRunning = false;
+    private float _lastCollisionTime = 0f;
+    private float _collisionCooldown = 0.1f; // Prevent sound spam
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 12f;
     [SerializeField] private float turnSpeed = 180f;
@@ -21,6 +24,9 @@ public class TruckController : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody>();
         currentHealth = maxHealth;
+        // Start engine sound
+        AudioManager.Instance.PlaySound("engine", transform.position);
+        _isEngineRunning = true;
     }
 
     private void FixedUpdate()
@@ -75,5 +81,15 @@ public class TruckController : MonoBehaviour
         _isDead = true;
         _currentSpeed = 0f;
         // Additional death logic will be implemented here
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            // Play collision sound with cooldown
+            if (Time.time - _lastCollisionTime > _collisionCooldown)
+            {
+                AudioManager.Instance.PlaySound("collision", collision.contacts[0].point);
+                _lastCollisionTime = Time.time;
+            }
+        }
     }
 }
